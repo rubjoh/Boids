@@ -52,6 +52,7 @@ while True:
 
     pygame.display.update()
 
+
 ## Quit Pygame and exit
 pygame.quit()
 exit()

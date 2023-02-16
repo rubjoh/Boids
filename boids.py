@@ -12,6 +12,7 @@ class Boids:
         self.h = h
         self.boids = boids
 
+
     def draw(self, surface):
         '''Method that draws the boid as a triangle on the given surface.'''
 
