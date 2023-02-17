@@ -2,9 +2,10 @@ import pygame
 import os
 import random
 from pygame.math import Vector2
+from objects import Object
 
-class Boids:
-    def __init__(self, x, y, image, w, h, boids, borders):
+class Boids(object):
+    def __init__(self, x, y, image, w, h, boids, borders,separation_on, alignment_on, cohesion_on):
         self.position = Vector2(x, y) 
         self.velocity = Vector2(random.randint(-2,2),random.randint(-2,2))
         self.image = image
@@ -13,6 +14,9 @@ class Boids:
         self.boids = boids
         self.neighborhood = 90
         self.borders = borders
+        self.separation_on = separation_on
+        self.alignment_on = alignment_on
+        self.cohesion_on = cohesion_on
 
     def draw(self, surface):
         '''Method that draws the boid as a triangle on the given surface.'''
@@ -59,13 +63,16 @@ class Boids:
 
 
         # Calling method for anti-collision behavior
-        self.separation()
+        if self.separation_on:
+            self.separation()
 
         # Calling method for aligning the velocity vectors 
-        self.alignment()
+        if self.alignment_on:
+            self.alignment()
 
         # Calling method for cohesion behavior 
-        self.cohesion()
+        if self.cohesion_on:
+            self.cohesion()
 
         # Limit the speed of the boid
         max_speed = 1

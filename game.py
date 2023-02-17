@@ -3,7 +3,7 @@ import pygame_gui
 import os 
 import random
 from boids import Boids
-
+from button import ToggleButton
 
 ## Defining some constants 
 FPS = 120
@@ -13,6 +13,7 @@ WIDTH, HEIGHT = 1200, 900
 pygame.init()
 
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption('Boids')
 
 ## Load images
 bird = pygame.image.load(os.path.join('Assets', 'trigy.png'))
@@ -21,7 +22,6 @@ SPACE1 = pygame.image.load(os.path.join('Assets', 'the11.jpg'))
 ## Resize images 
 bird_WIDTH, bird_HEIGHT = int(bird.get_width() * 0.1), int(bird.get_height() * 0.1)
 bird1 = pygame.transform.scale(bird, (bird_WIDTH, bird_HEIGHT))
-#bird1 = pygame.transform.rotate(bird1, 90)
 SPACE = pygame.transform.scale(SPACE1, (WIDTH, HEIGHT))
 
 ## Create the borders
@@ -29,14 +29,48 @@ border_thickness = 25
 border = pygame.Surface((WIDTH, border_thickness))
 border.fill((100,150,110))
 
-# Initialize GUI manager
-gui = pygame_gui.UIManager((WIDTH,HEIGHT))
 
-## Create a simple button
-button = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((WIDTH/2 - 50, HEIGHT/2 - 25), (100, 50)),
-    text='Hello',
-    manager=gui
+
+separation_button = ToggleButton(
+    x=WIDTH - 220,
+    y=100,
+    width=200,
+    height=50,
+    on_text='Separation: On',
+    off_text='Separation: Off',
+    font=pygame.font.Font(None, 24),
+    on_color=(0, 255, 0),
+    off_color=(255, 0, 0),
+    screen=WIN,
+    initial_state=True
+)
+
+cohesion_button = ToggleButton(
+    x=WIDTH - 220,
+    y=170,
+    width=200,
+    height=50,
+    on_text='Cohesion: On',
+    off_text='Cohesion: Off',
+    font=pygame.font.Font(None, 24),
+    on_color=(0, 255, 0),
+    off_color=(255, 0, 0),
+    screen=WIN,
+    initial_state=True
+)
+
+alignment_button = ToggleButton(
+    x=WIDTH - 220,
+    y=240,
+    width=200,
+    height=50,
+    on_text='Alignment: On',
+    off_text='Alignment: Off',
+    font=pygame.font.Font(None, 24),
+    on_color=(0, 255, 0),
+    off_color=(255, 0, 0),
+    screen=WIN,
+    initial_state=True
 )
 
 def main():
@@ -46,26 +80,28 @@ def main():
     for i in range(100):
         x = random.randint(50,WIDTH-50)
         y = random.randint(20,HEIGHT-20)
-        boids.append(Boids(x, y, bird1, WIDTH, HEIGHT, boids, border_thickness))
+        boids.append(Boids(x, y, bird1, WIDTH, HEIGHT, boids, border_thickness, True, True, True))
 
     # Setting the speed of the while-loop
     clock = pygame.time.Clock() 
-
+    run = True
     ## Game loop
-    while True: 
+    while run: 
         clock.tick(FPS)
-        event = pygame.event.poll()
-        if event.type == pygame.QUIT:
-            break
-        ## Handle events for the GUI
-        if event.type == pygame.USEREVENT:
-            if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
-                if event.ui_element == button:
-                    print('Hello!')
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            pos = pygame.mouse.get_pos()  # get the mouse position
+            if separation_button.check_clicked(event, pos):
+                for boid in boids:
+                    boid.separation_on = separation_button.state
+            if cohesion_button.check_clicked(event, pos):
+                for boid in boids:
+                    boid.cohesion_on = cohesion_button.state
+            if alignment_button.check_clicked(event, pos):
+                for boid in boids:
+                    boid.alignment_on = alignment_button.state
 
-        ## Update the GUI
-        gui.process_events(event)
-        gui.update(FPS/1000)
 
         ## Move the boids
         for boid in boids:
@@ -77,8 +113,11 @@ def main():
         WIN.blit(border,(0,HEIGHT-border_thickness))
         for boid in boids:
             boid.draw(WIN)
-        ## Draw the GUI
-        gui.draw_ui(WIN)
+        
+        alignment_button.draw()
+        separation_button.draw()
+        cohesion_button.draw()
+
 
         pygame.display.update()
 
