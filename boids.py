@@ -4,13 +4,9 @@ import random
 from pygame.math import Vector2
 from objects import Object
 
-class Boids(object):
-    def __init__(self, x, y, image, w, h, boids, borders,separation_on, alignment_on, cohesion_on):
-        self.position = Vector2(x, y) 
-        self.velocity = Vector2(random.randint(-2,2),random.randint(-2,2))
-        self.image = image
-        self.w = w
-        self.h = h
+class Boids(Object):
+    def __init__(self, x, y, image, screen_width, screen_height, boids, borders,separation_on, alignment_on, cohesion_on):
+        super().__init__(x, y, image, screen_width, screen_height)
         self.boids = boids
         self.neighborhood = 90
         self.borders = borders
@@ -18,34 +14,11 @@ class Boids(object):
         self.alignment_on = alignment_on
         self.cohesion_on = cohesion_on
 
-    def draw(self, surface):
-        '''Method that draws the boid as a triangle on the given surface.'''
-
-        # Calculate the angle of rotation based on the direction of the velocity vector
-        angle = self.velocity.angle_to(Vector2(0, -1))
-
-        # Rotate the image of the boid
-        rotated_image = pygame.transform.rotate(self.image, angle)
-
-        # Get the rectangle that encloses the rotated image
-        rect = rotated_image.get_rect()
-
-        # Set the center of the rectangle to the position of the boid
-        rect.center = (int(self.position.x), int(self.position.y))
-
-        # Draw the rotated image on the surface
-        surface.blit(rotated_image, rect)
 
     def update(self, width, height):
 
-        # Save current position
-        #current_pos = self.position.copy()
-
         # Update the position based on velocity
         self.position += self.velocity
-
-        # Update the velocity 
-        #self.velocity = self.position - current_pos
 
         ## Check if boid is out of the screen and flip the position to opposite side
         # Check left border
@@ -60,7 +33,6 @@ class Boids(object):
         self.position.y = min(self.position.y, height - self.borders - 30)
         if self.position.y == self.borders + 30 or self.position.y == height - self.borders - 30:
             self.velocity.y = -self.velocity.y
-
 
         # Calling method for anti-collision behavior
         if self.separation_on:
@@ -103,7 +75,6 @@ class Boids(object):
             mean_pos /= n_boids
 
         # Calculate the vector towards the mean position and nomalize it 
-        # to ensure that speed in not increasing
         towards_mean = (mean_pos - self.position).normalize()
 
         # Adjust the velocity vector towards the mean position

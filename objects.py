@@ -4,7 +4,7 @@ import random
 
 class Object:
     def __init__(self, x, y, image, screen_width, screen_height):
-        self.pos = Vector2(x,y)
+        self.position = Vector2(x,y)
         self.velocity = Vector2(random.randint(-2,2),random.randint(-2,2))
         self.image = image
         self.w = screen_width
@@ -28,7 +28,7 @@ class Object:
         # Draw the rotated image on the surface
         surface.blit(rotated_image, rect)
 
-    def move(self):
+    def update(self):
         pass
 
     def get_box(self):
