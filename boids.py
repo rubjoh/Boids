@@ -15,7 +15,7 @@ class Boids:
         self.borders = borders
 
     def draw(self, surface):
-        '''Method that draws the boid as a triangle on the given surface. '''
+        '''Method that draws the boid as a triangle on the given surface.'''
 
         # Calculate the angle of rotation based on the direction of the velocity vector
         angle = self.velocity.angle_to(Vector2(0, -1))

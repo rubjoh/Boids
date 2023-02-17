@@ -35,7 +35,7 @@ gui = pygame_gui.UIManager((WIDTH,HEIGHT))
 ## Create a simple button
 button = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((WIDTH/2 - 50, HEIGHT/2 - 25), (100, 50)),
-    text='Hello ',
+    text='Hello',
     manager=gui
 )
 
