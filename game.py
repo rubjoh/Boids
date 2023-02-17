@@ -21,14 +21,14 @@ SPACE1 = pygame.image.load(os.path.join('Assets', 'the11.jpg'))
 ## Resize images 
 bird_WIDTH, bird_HEIGHT = int(bird.get_width() * 0.2), int(bird.get_height() * 0.2)
 bird1 = pygame.transform.scale(bird, (bird_WIDTH, bird_HEIGHT))
-#bird1 = pygame.transform.rotate(bird1, 90)
+#bird1 = pygame.transform.rotate(bird1, 270)
 SPACE = pygame.transform.scale(SPACE1, (WIDTH, HEIGHT))
 
 ## Create boids
 boids = []
 for i in range(50):
-    x = random.randint(0,WIDTH)
-    y = random.randint(0,HEIGHT)
+    x = random.randint(50,WIDTH-50)
+    y = random.randint(20,HEIGHT-20)
     boids.append(Boids(x, y, bird1, WIDTH, HEIGHT, boids))
 
 # Setting the speed of the while-loop
