@@ -1,9 +1,10 @@
 from objects import Object
 from pygame.math import Vector2
-import random
+import numpy as np
 
 class Predator(Object):
-    def __init__(self, x, y, image, screen_width, screen_height, boids, borders, predators, max_kill):
+    killed = 0
+    def __init__(self, x, y, image, screen_width, screen_height, boids, borders, predators, max_kill, obstacles):
         super().__init__(x, y, image, screen_width, screen_height)
         self.boids = boids
         self.borders = borders
@@ -11,6 +12,8 @@ class Predator(Object):
         self.count = 0 
         self.max_kill = max_kill
         self.neighborhood = 75
+        self.obstacles = obstacles
+
 
     def cohesion(self):
         '''Method that moves the predators to the mean of the boids in it's neighborhood'''
@@ -59,10 +62,10 @@ class Predator(Object):
             self.velocity += towards_mean * weight
 
     def separation(self):
-        '''Method that avoids collision with other predators'''
+        '''Method that avoids collision with other predators and obstacles'''
         steering = Vector2(0, 0)
         for predator in self.predators:
-            if predator is not self and (predator.position - self.position).length() < 40:
+            if predator is not self and (predator.position - self.position).length() < 70:
                 diff_vec = self.position - predator.position
                 diff_length = diff_vec.length()
                 if diff_length > 0:
@@ -72,17 +75,42 @@ class Predator(Object):
             # Normalize the steering force and apply a weight to control its strength
             steering = steering.normalize() 
             self.velocity += steering * 0.05
+
+        ## Steering away for obstacles 
+        steering1 = Vector2(0, 0)
+        for obstacle in self.obstacles:
+            if (obstacle.position - self.position).length() < 80:
+                diff_vec1 = self.position - obstacle.position
+                diff_length1 = diff_vec1.length()
+                if diff_length1 > 0:
+                    # Weight the steering force based on the distance to the other boid
+                    steering1 += diff_vec1.normalize() / diff_length1
+        if steering1.length() > 0:
+            # Normalize the steering force and apply a weight to control its strength
+            steering1 = steering1.normalize() 
+            self.velocity += steering1 * 0.5
     
     def eliminate(self):
         '''Method for eliminating boids'''
         ## Iterate over all boids
         for boid in self.boids:
             # Check distance between predator and boid, pluss max eliminate limit
-            if (boid.position - self.position).length() < 10 and self.count < self.max_kill:
+            if (boid.position - self.position).length() < 5 and self.count < self.max_kill:
                 # Remove boid
                 self.boids.remove(boid)
                 # Update the kill count
                 self.count +=1
+                Predator.killed += 1
+
+
+    def move_to_center(self):
+        # Calculate the vector towards the center of the screen and normalize it 
+        towards_center = (Vector2(self.w//2, self.h//2) - self.position).normalize()
+
+        # Adjust the velocity vector towards the center of the screen
+        weight = 0.06
+        self.velocity += towards_center * weight
+
 
     def update(self, width, height):
 
@@ -98,14 +126,10 @@ class Predator(Object):
             self.position.x = 0
             
         # Check top and bottom borders
-        self.position.y = max(self.position.y, self.borders + 30)
-        self.position.y = min(self.position.y, height - self.borders - 30)
-        if self.position.y == self.borders + 30 or self.position.y == height - self.borders - 30:
+        self.position.y = max(self.position.y, self.borders + 40)
+        self.position.y = min(self.position.y, height - self.borders - 40)
+        if self.position.y == self.borders + 40 or self.position.y == height - self.borders - 40:
             self.velocity.y = -self.velocity.y
-
-
-        # Calling method for anti-collision behavior
-        self.separation()
 
         # Calling method for aligning the velocity vectors with the boids velocity vector
         self.alignment()
@@ -116,8 +140,15 @@ class Predator(Object):
         # Calling elimination method
         self.eliminate()
 
+        # Calling method for anti-collision behavior
+        self.separation()
+
+        # Move towards the center of the screen when there are no boids in the neighborhood
+        self.move_to_center()
+
+
         # Limit the speed of the boid
-        max_speed = 1.2
+        max_speed = 0.8
         if self.velocity.length() > max_speed:
             self.velocity.scale_to_length(max_speed)
 
@@ -128,3 +159,4 @@ class Predator(Object):
             self.velocity += acceleration
             if self.velocity.length() > max_speed:
                 self.velocity.scale_to_length(max_speed)
+

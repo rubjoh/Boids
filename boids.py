@@ -5,14 +5,15 @@ from pygame.math import Vector2
 from objects import Object
 
 class Boids(Object):
-    def __init__(self, x, y, image, screen_width, screen_height, boids, borders,separation_on, alignment_on, cohesion_on):
+    def __init__(self, x, y, image, screen_width, screen_height, boids, borders,separation_on, alignment_on, cohesion_on, obstacles):
         super().__init__(x, y, image, screen_width, screen_height)
         self.boids = boids
-        self.neighborhood = 90
+        self.neighborhood = 80
         self.borders = borders
         self.separation_on = separation_on
         self.alignment_on = alignment_on
         self.cohesion_on = cohesion_on
+        self.obstacles = obstacles
 
 
     def update(self, width, height):
@@ -75,11 +76,11 @@ class Boids(Object):
             mean_pos /= n_boids
 
         # Calculate the vector towards the mean position and nomalize it 
-        towards_mean = (mean_pos - self.position).normalize()
+        towards_mean = (mean_pos - self.position + Vector2(0.0001, 0.0001)).normalize()
 
         # Adjust the velocity vector towards the mean position
         # Weight controls the strength of the cohesion behavior
-        weight = 0.065
+        weight = 0.05
         self.velocity += towards_mean * weight
 
 
@@ -105,12 +106,13 @@ class Boids(Object):
 
             # Adjust the velocity vector towards the mean velocity
             # Weight controls the strength of the alignment behavior
-            weight = 0.065
+            weight = 0.05
             self.velocity += towards_mean * weight
 
 
     def separation(self):
-        '''Method that avoids collision with other boids'''
+        '''Method that avoids collision with other boids and obstacles'''
+        ## Steering away from other boids
         steering = Vector2(0, 0)
         for boid in self.boids:
             if boid is not self and (boid.position - self.position).length() < 30:
@@ -122,6 +124,20 @@ class Boids(Object):
         if steering.length() > 0:
             # Normalize the steering force and apply a weight to control its strength
             steering = steering.normalize() 
-            self.velocity += steering * 0.07
+            self.velocity += steering * 0.075
+
+        ## Steering away for obstacles 
+        steering1 = Vector2(0, 0)
+        for obstacle in self.obstacles:
+            if (obstacle.position - self.position).length() < 60:
+                diff_vec1 = self.position - obstacle.position
+                diff_length1 = diff_vec1.length()
+                if diff_length1 > 0:
+                    # Weight the steering force based on the distance to the other boid
+                    steering1 += diff_vec1.normalize() / diff_length1
+        if steering1.length() > 0:
+            # Normalize the steering force and apply a weight to control its strength
+            steering1 = steering1.normalize() 
+            self.velocity += steering1 * 0.5
  
 
